@@ -1,0 +1,2 @@
+User-agent: *
+Disallow: /panel-ba2026

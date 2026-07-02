@@ -1,5 +1,4 @@
-import React from 'react';
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Testimonial {
   text: string;
@@ -70,9 +69,7 @@ const TestimonialCard = ({ text, image, name, role }: Testimonial) => (
           <cite className="font-semibold not-italic text-foreground">
             {name}
           </cite>
-          <span className="text-xs text-muted-foreground">
-            {role}
-          </span>
+          <span className="text-xs text-muted-foreground">{role}</span>
         </div>
       </footer>
     </blockquote>
@@ -83,71 +80,56 @@ const TestimonialsColumn = (props: {
   className?: string;
   testimonials: Testimonial[];
   duration?: number;
-}) => {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return (
-      <div className={props.className}>
-        <ul className="flex flex-col gap-6 pb-6 list-none m-0 p-0">
-          {props.testimonials.map((t, i) => (
-            <TestimonialCard key={i} {...t} />
-          ))}
-        </ul>
-      </div>
-    );
-  }
-
-  return (
-    <div className={props.className}>
-      <motion.ul
-        animate={{ translateY: "-50%" }}
-        transition={{
-          duration: props.duration || 10,
-          repeat: Infinity,
-          ease: "linear",
-          repeatType: "loop",
-        }}
-        className="flex flex-col gap-6 pb-6 list-none m-0 p-0"
-      >
-        {[...new Array(2).fill(0).map((_, index) => (
-          <React.Fragment key={index}>
-            {props.testimonials.map((t, i) => (
-              <TestimonialCard key={`${index}-${i}`} {...t} />
-            ))}
-          </React.Fragment>
-        ))]}
-      </motion.ul>
-    </div>
-  );
-};
-
-export const TestimonialsSection = () => {
-  return (
-    <section
-      aria-labelledby="testimonials-heading"
-      className="section-padding relative overflow-hidden"
+}) => (
+  <div className={props.className}>
+    <motion.ul
+      className="flex flex-col gap-6 pb-6 list-none m-0 p-0"
+      animate={{ y: ["0%", "-50%"] }}
+      transition={{
+        duration: props.duration || 20,
+        repeat: Infinity,
+        ease: "linear",
+        repeatType: "loop",
+      }}
     >
-      <div className="container px-4 z-10 mx-auto">
-        <div className="text-center mb-16">
-          <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-bold mb-4">
-            Lo que dicen nuestros clientes
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Descubre por qué Barba Azul es la preferida en Barranquilla.
-          </p>
-        </div>
+      {[...props.testimonials, ...props.testimonials].map((t, i) => (
+        <TestimonialCard key={i} {...t} />
+      ))}
+    </motion.ul>
+  </div>
+);
 
-        <div
-          className="flex justify-center gap-6 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)] max-h-[600px] overflow-hidden"
-          role="region"
-          aria-label="Testimonios en desplazamiento"
-        >
-          <TestimonialsColumn testimonials={firstColumn} duration={20} />
-          <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={25} />
-          <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={22} />
-        </div>
+export const TestimonialsSection = () => (
+  <section
+    aria-labelledby="testimonials-heading"
+    className="section-padding relative overflow-hidden"
+  >
+    <div className="container px-4 z-10 mx-auto">
+      <div className="text-center mb-16">
+        <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-bold mb-4">
+          Lo que dicen nuestros clientes
+        </h2>
+        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          Descubre por qué Barba Azul es la preferida en Barranquilla.
+        </p>
       </div>
-    </section>
-  );
-};
+      <div
+        className="flex justify-center gap-6 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] max-h-[600px] overflow-hidden motion-reduce:overflow-visible motion-reduce:max-h-none"
+        role="region"
+        aria-label="Testimonios en desplazamiento"
+      >
+        <TestimonialsColumn testimonials={firstColumn} duration={20} />
+        <TestimonialsColumn
+          testimonials={secondColumn}
+          className="hidden md:block"
+          duration={25}
+        />
+        <TestimonialsColumn
+          testimonials={thirdColumn}
+          className="hidden lg:block"
+          duration={22}
+        />
+      </div>
+    </div>
+  </section>
+);

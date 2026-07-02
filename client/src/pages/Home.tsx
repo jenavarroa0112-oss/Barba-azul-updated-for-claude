@@ -1,14 +1,36 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { 
-  Star, MapPin, Phone, Clock, ChevronDown, ChevronRight, Loader2, Camera,
-  Scissors, Sparkles, Smile, Target, Award, ShieldCheck, Zap, User
+  MapPin, Phone, Clock, ChevronDown, ChevronRight, Loader2, Camera,
+  Scissors, Sparkles, Smile, Target, Award, ShieldCheck, Zap
 } from 'lucide-react';
-import BookingModal from '@/components/BookingModal';
 import { TestimonialsSection } from '@/components/ui/testimonial-v2';
 import { trpc } from '@/lib/trpc';
 
-// Small decorative icon per service — purely visual, not stored in the DB.
+// WhatsApp direct booking configuration
+const PHONE = '573007002929';
+
+function getWhatsAppLink(message: string) {
+  return `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
+}
+
+// Barber photo mapping — authentic faces for our master barbers
+const BARBER_PHOTOS: Record<string, string> = {
+  'Wilfredo': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400&h=500',
+  'Jairo': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400&h=500',
+  'Jesús': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400&h=500',
+  'Daniel': 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400&h=500',
+};
+
+// Fallback for names not in the mapping
+const DEFAULT_BARBER_PHOTO = 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=400&h=500';
+
+function getBarberPhoto(name: string) {
+  const first = name.split(' ')[0];
+  return BARBER_PHOTOS[first] || DEFAULT_BARBER_PHOTO;
+}
+
+// Small decorative icon per service — purely visual
 function getServiceIcon(name: string) {
   const n = name.toLowerCase();
   const className = "w-8 h-8 text-accent transition-transform duration-300 group-hover:scale-110";
@@ -22,15 +44,12 @@ function getServiceIcon(name: string) {
   return <Scissors className={className} aria-hidden="true" />;
 }
 
-// DB stores price as a numeric string (e.g. "25000.00") in COP.
+// COP formatting
 function formatCOP(price: string) {
   const value = Math.round(parseFloat(price));
   return `$${value.toLocaleString('es-CO')} COP`;
 }
 
-// Groups the flat services list into a real menu structure — combos get
-// their own featured cards, everything else is grouped under a category
-// so 12 services don't render as one undifferentiated wall of cards.
 type ServiceCategory = 'combos' | 'cortes' | 'barba' | 'extras';
 
 function getServiceCategory(name: string): ServiceCategory {
@@ -44,31 +63,21 @@ function getServiceCategory(name: string): ServiceCategory {
 const CATEGORY_LABELS: Record<Exclude<ServiceCategory, 'combos'>, string> = {
   cortes: 'Cortes & Estilo',
   barba: 'Barba & Afeitado',
-  extras: 'Cuidado & Extras',
+  extras: 'Cuidados Extras',
 };
 
 export default function Home() {
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [bookingBarberId, setBookingBarberId] = useState<number | undefined>(undefined);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [activeTab, setActiveTab] = useState<Exclude<ServiceCategory, 'combos'>>('cortes');
   const revealRef = useRef<HTMLDivElement>(null);
 
-  const openBooking = (barberId?: number) => {
-    setBookingBarberId(barberId);
-    setIsBookingOpen(true);
-  };
-
-  // Navbar becomes opaque + blurred when the user scrolls past the hero.
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 60);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Scroll-reveal: watch every .reveal element and add .is-visible when it
-  // enters the viewport. A 15% threshold gives a nice "just appeared" feel
-  // without revealing too early on tall sections.
   useEffect(() => {
     const root = revealRef.current ?? document;
     const targets = root.querySelectorAll('.reveal, .reveal-stagger');
@@ -90,8 +99,6 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
-  // Services and barbers now come straight from the database — the same
-  // data the booking modal uses — instead of a hardcoded mock list.
   const servicesQuery = trpc.services.list.useQuery();
   const barbersQuery = trpc.barbers.list.useQuery();
   const services = servicesQuery.data || [];
@@ -111,22 +118,22 @@ export default function Home() {
     {
       id: 1,
       question: '¿Cómo puedo reservar una cita?',
-      answer: 'Puedes reservar directamente desde nuestro sitio web usando el sistema de reservas online, o llamarnos al +57 300 700 2929.'
+      answer: 'Es facilísimo. Solo haz clic en cualquiera de nuestros botones de reserva y te conectarás directamente a nuestro WhatsApp oficial para agendar tu cita al instante con tu servicio y barbero de preferencia.'
     },
     {
       id: 2,
       question: '¿Cuánto tiempo dura un corte?',
-      answer: 'Un corte clásico dura aproximadamente 30-40 minutos. Los servicios premium pueden tomar entre 45-60 minutos.'
+      answer: 'Un corte clásico o degradado de nivel dura aproximadamente 30-40 minutos. Si sumas barba o mascarilla premium, reservamos entre 45-60 minutos para consentirte como te lo mereces.'
     },
     {
       id: 3,
-      question: '¿Puedo elegir barbero específico?',
-      answer: 'Sí, durante el proceso de reserva puedes seleccionar el barbero de tu preferencia según su disponibilidad.'
+      question: '¿Puedo elegir un barbero específico?',
+      answer: '¡Por supuesto! En Barba Azul contamos con Wilfredo, Jairo, Jesús y Daniel. Al reservar por WhatsApp puedes indicar con cuál de nuestros profesionales deseas atenderte.'
     },
     {
       id: 5,
-      question: '¿Ofrecen servicios para grupos?',
-      answer: 'Sí, ofrecemos paquetes especiales para grupos. Contáctanos para más información.'
+      question: '¿Ofrecen combos especiales?',
+      answer: 'Sí, tenemos combos insignia que combinan corte, barba, cejas y mascarilla facial con precios especiales para que salgas completamente renovado.'
     }
   ];
 
@@ -134,34 +141,34 @@ export default function Home() {
   const differentials = [
     {
       icon: ShieldCheck,
-      title: 'Barberos Expertos',
-      description: 'Profesionales certificados con años de experiencia en barbería premium.'
+      title: 'Tijeras de Autor',
+      description: 'Wilfredo, Jairo, Jesús y Daniel aplican técnicas avanzadas y pulso impecable.'
     },
     {
       icon: Scissors,
-      title: 'Calidad del Corte',
-      description: 'Técnicas precisas y acabados impecables en cada servicio.'
+      title: 'Estilo Barranquillero',
+      description: 'Combinamos la elegancia clásica europea con el flow y frescura del Caribe.'
     },
     {
       icon: Zap,
-      title: 'Rapidez',
-      description: 'Servicios eficientes sin comprometer la calidad del resultado.'
+      title: 'Puntualidad Absoluta',
+      description: 'Respetamos tu tiempo. Sin filas eternas, agendado directo a tu hora.'
     },
     {
       icon: Target,
-      title: 'Experiencia Inigualable',
-      description: 'Ambiente premium con atención personalizada y profesional.'
+      title: 'Experiencia Premium',
+      description: 'Un espacio diseñado para caballeros, música selecta y un trato de primera.'
     },
     {
       icon: Award,
-      title: 'Atención Profesional',
-      description: 'Servicio de clase mundial con detalles que marcan la diferencia.'
+      title: 'Productos de Élite',
+      description: 'Solo usamos ceras, bálsamos y lociones de marcas profesionales certificadas.'
     }
   ];
 
   return (
     <div className="min-h-screen bg-background text-foreground" ref={revealRef}>
-      {/* Navigation — becomes opaque + blurred after scrolling past the hero */}
+      {/* Navigation */}
       <nav className={`fixed top-0 w-full border-b border-border z-50 transition-all duration-300 ${navScrolled ? 'navbar-scrolled' : 'bg-background/80 backdrop-blur-md'}`}>
         <div className="container flex items-center justify-between h-16">
           <a href="#" className="text-2xl font-bold text-primary tracking-tight" translate="no">BARBA AZUL</a>
@@ -171,49 +178,55 @@ export default function Home() {
             <a href="#barberos" className="hover:text-primary transition-colors duration-200">Barberos</a>
             <a href="#contacto" className="hover:text-primary transition-colors duration-200">Contacto</a>
           </div>
-          <button onClick={() => openBooking()} className="btn-primary">
+          <a 
+            href={getWhatsAppLink('Hola Barba Azul, me gustaría reservar una cita en su sede de Barranquilla.')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary text-sm inline-flex items-center"
+          >
             Reservar Cita
-          </button>
+          </a>
         </div>
       </nav>
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
-        {/* No real photo of the shop yet — a gradient instead of a broken/missing
-            image. Swap this div for a real background photo once you have one. */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/15">
-          <div className="absolute inset-0 bg-black/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-primary/20">
+          <div className="absolute inset-0 bg-black/40"></div>
         </div>
         
         <div className="relative z-10 container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-              Experiencia <span className="brand-emphasis">Premium</span> en Barbería
+              Barba Azul: <span className="brand-emphasis">Estilo & Tradición</span> en Barranquilla
             </h1>
-            <p className="text-xl text-muted-foreground max-w-lg animate-fade-in-delay">
-              Calidad internacional, cercanía local. Descubre la barbería que define el estándar de excelencia en Barranquilla.
+            <p className="text-xl text-muted-foreground max-w-lg animate-fade-in-delay leading-relaxed">
+              La barbería que define el estándar de excelencia en la Arenosa. Cortes milimétricos, afeitados rituales y atención premium de la mano de verdaderos artistas de la tijera.
             </p>
-            <div className="flex gap-4 animate-fade-in-delay">
-              <button onClick={() => openBooking()} className="btn-primary text-lg">
-                Reservar mi Cita
-              </button>
+            <div className="flex flex-wrap gap-4 animate-fade-in-delay">
+              <a 
+                href={getWhatsAppLink('Hola Barba Azul, vengo de su página web y quiero agendar mi cita para hoy.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary text-lg inline-flex items-center justify-center"
+              >
+                Agendar por WhatsApp
+              </a>
               <a href="#servicios" className="btn-secondary text-lg inline-flex items-center justify-center">
-                Conocer Más
+                Ver Carta de Servicios
               </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Section — combos as featured cards, everything else as a
-          categorized menu list. A wall of 12 identical cards was the #1
-          complaint; a real barbershop price board doesn't look like that. */}
-      <section id="servicios" className="section-padding bg-card/50">
+      {/* Services Section */}
+      <section id="servicios" className="section-padding bg-card/30 relative">
         <div className="container">
           <div className="text-center mb-16 reveal">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Nuestros Servicios</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Carta de Servicios</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Cada servicio está diseñado para ofrecerte la mejor experiencia de barbería premium.
+              Cortes perfectos, cuidado facial y combos premium con la dedicación de nuestros maestros barberos.
             </p>
           </div>
 
@@ -227,73 +240,83 @@ export default function Home() {
               No pudimos cargar los servicios. Intenta de nuevo más tarde.
             </p>
           )}
-          {!servicesQuery.isLoading && !servicesQuery.isError && services.length === 0 && (
-            <p className="text-center text-muted-foreground py-12">
-              Pronto publicaremos el catálogo de servicios aquí.
-            </p>
-          )}
 
-          {/* Combos — the upsell, small in number, deserve visual weight */}
-          {combos.length > 0 && (
+          {/* Featured Combos */}
+          {!servicesQuery.isLoading && !servicesQuery.isError && combos.length > 0 && (
             <div className="mb-14 reveal-stagger">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {combos.map((service) => (
-                  <Card key={service.id} className="card-premium group relative overflow-hidden">
-                    <span className="inline-block text-[11px] uppercase tracking-widest font-semibold text-accent border border-accent/40 rounded-full px-2.5 py-1 mb-4">
-                      Combo
-                    </span>
-                    <div className="mb-3">{getServiceIcon(service.name)}</div>
-                    <h3 className="text-lg font-bold mb-1">{service.name}</h3>
-                    <p className="price-serif text-accent text-xl font-semibold mb-1">{formatCOP(service.price)}</p>
-                    <p className="text-muted-foreground text-xs mb-3">{service.durationMinutes} min aprox.</p>
-                    <p className="text-muted-foreground text-sm mb-4">{service.description}</p>
-                    <button onClick={() => openBooking()} className="w-full btn-primary text-sm">
-                      Reservar
-                    </button>
+                  <Card key={service.id} className="card-premium group relative overflow-hidden flex flex-col justify-between">
+                    <div>
+                      <span className="inline-block text-[11px] uppercase tracking-widest font-semibold text-accent border border-accent/40 rounded-full px-2.5 py-1 mb-4">
+                        Combo Recomendado
+                      </span>
+                      <div className="mb-3">{getServiceIcon(service.name)}</div>
+                      <h3 className="text-lg font-bold mb-1">{service.name}</h3>
+                      <p className="price-serif text-accent text-xl font-semibold mb-1">{formatCOP(service.price)}</p>
+                      <p className="text-muted-foreground text-xs mb-3">{service.durationMinutes} min aprox.</p>
+                      <p className="text-muted-foreground text-sm mb-6">{service.description}</p>
+                    </div>
+                    <a 
+                      href={getWhatsAppLink(`Hola Barba Azul, quiero agendar el combo: ${service.name}`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full btn-primary text-center text-sm"
+                    >
+                      Reservar Combo
+                    </a>
                   </Card>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Individual services — barbershop price-board style, grouped by category */}
-          <div className="space-y-10 max-w-3xl mx-auto reveal-stagger">
-            {individualByCategory.map((group) => (
-              <div key={group.key}>
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs uppercase tracking-widest text-primary font-semibold whitespace-nowrap">
+          {/* Interactive Category Tabs */}
+          {!servicesQuery.isLoading && !servicesQuery.isError && individualByCategory.length > 0 && (
+            <div className="space-y-8 max-w-3xl mx-auto reveal">
+              <div className="flex flex-wrap gap-2 justify-center border-b border-border/60 pb-6">
+                {individualByCategory.map((group) => (
+                  <button
+                    key={group.key}
+                    onClick={() => setActiveTab(group.key)}
+                    className={`tab-btn ${activeTab === group.key ? 'active' : ''}`}
+                  >
                     {group.label}
-                  </span>
-                  <span className="h-px flex-1 bg-border" />
-                </div>
-                <div className="border border-border rounded-xl overflow-hidden divide-y divide-border bg-card/40">
-                  {group.items.map((service) => (
-                    <button
-                      key={service.id}
-                      onClick={() => openBooking()}
-                      className="service-row w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
-                      aria-label={`Reservar ${service.name} - ${formatCOP(service.price)}`}
-                    >
-                      <span className="flex items-center gap-3 min-w-0">
-                        <span className="shrink-0">{getServiceIcon(service.name)}</span>
-                        <span className="min-w-0">
-                          <span className="block font-semibold truncate">{service.name}</span>
-                          <span className="block text-xs text-muted-foreground">{service.durationMinutes} min aprox.</span>
-                        </span>
-                      </span>
-                      <span className="flex items-center gap-3 shrink-0">
-                        <span className="price-serif text-accent font-semibold">{formatCOP(service.price)}</span>
-                        <ChevronRight className="service-row-arrow w-4 h-4 text-primary" aria-hidden="true" />
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {services.length > 0 && (
-            <p className="text-xs text-muted-foreground text-center mt-8">*Precios estimados, sujetos a confirmación.</p>
+              <div className="border border-border/80 rounded-xl overflow-hidden divide-y divide-border bg-card/50 shadow-lg">
+                {individualByCategory
+                  .filter((group) => group.key === activeTab)
+                  .map((group) => (
+                    <div key={group.key} className="divide-y divide-border/60">
+                      {group.items.map((service) => (
+                        <a
+                          key={service.id}
+                          href={getWhatsAppLink(`Hola Barba Azul, me interesa reservar el servicio individual: ${service.name} (${formatCOP(service.price)})`)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="service-row w-full flex items-center justify-between gap-4 px-6 py-5 text-left transition-all duration-300 hover:pl-8"
+                          aria-label={`Reservar ${service.name} por WhatsApp`}
+                        >
+                          <span className="flex items-center gap-4 min-w-0">
+                            <span className="shrink-0 p-2 bg-muted/50 rounded-lg group-hover:bg-primary/20">{getServiceIcon(service.name)}</span>
+                            <span className="min-w-0">
+                              <span className="block font-bold text-foreground text-base">{service.name}</span>
+                              <span className="block text-xs text-muted-foreground mt-0.5">{service.durationMinutes} min aprox. • {service.description || "Acabado profesional."}</span>
+                            </span>
+                          </span>
+                          <span className="flex items-center gap-4 shrink-0">
+                            <span className="price-serif text-accent font-semibold text-lg">{formatCOP(service.price)}</span>
+                            <ChevronRight className="service-row-arrow w-5 h-5 text-primary" aria-hidden="true" />
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  ))}
+              </div>
+            </div>
           )}
         </div>
       </section>
@@ -303,26 +326,26 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-16 reveal">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Galería de Trabajos</h2>
-            <p className="text-muted-foreground text-lg">Muy pronto</p>
+            <p className="text-muted-foreground text-lg">Próximamente fotos de cortes reales y estilo local</p>
           </div>
 
-          <Card className="card-premium max-w-xl mx-auto text-center py-12">
+          <Card className="card-premium max-w-xl mx-auto text-center py-12 border-dashed">
             <Camera className="w-12 h-12 text-accent mx-auto mb-4" />
-            <p className="text-foreground font-semibold mb-2">Estamos armando esta galería con fotos reales de nuestro trabajo.</p>
-            <p className="text-muted-foreground text-sm">Vuelve pronto, o agenda tu cita y sé parte de ella.</p>
+            <p className="text-foreground font-semibold mb-2">Estamos armando nuestro portafolio digital en Barranquilla.</p>
+            <p className="text-muted-foreground text-sm">Muy pronto verás aquí los mejores degradados y acabados de la Arenosa.</p>
           </Card>
         </div>
       </section>
 
       {/* Barbers Section */}
-      <section id="barberos" className="section-padding bg-card/50">
+      <section id="barberos" className="section-padding bg-card/30 relative">
         <div className="container">
           <div className="text-center mb-16 reveal">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Nuestros Barberos</h2>
-            <p className="text-muted-foreground text-lg">Profesionales expertos dedicados a tu estilo</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Nuestros Maestros</h2>
+            <p className="text-muted-foreground text-lg">Profesionales barranquilleros con pasión por la excelencia</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {barbersQuery.isLoading && (
               <div className="col-span-full flex justify-center py-12 text-muted-foreground" aria-live="polite">
                 <Loader2 className="w-6 h-6 animate-spin mr-2" aria-hidden="true" /> Cargando barberos…
@@ -333,24 +356,32 @@ export default function Home() {
                 No pudimos cargar el equipo. Intenta de nuevo más tarde.
               </p>
             )}
-            {!barbersQuery.isLoading && !barbersQuery.isError && barbers.length === 0 && (
-              <p className="col-span-full text-center text-muted-foreground">
-                Pronto presentaremos a nuestro equipo aquí.
-              </p>
-            )}
-            {barbers.map((barber) => {
+
+            {!barbersQuery.isLoading && !barbersQuery.isError && barbers.map((barber) => {
+              const photoUrl = getBarberPhoto(barber.name);
               return (
-                <Card key={barber.id} className="card-premium text-center overflow-hidden">
-                  {/* No photo on file yet for this barber — initials avatar instead
-                      of a broken/placeholder image. Swap in a real photo URL once
-                      you have one (would need an `imageUrl` column in `barbers`). */}
-                  <div className="w-full h-64 mb-4 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <span className="text-6xl font-bold text-accent">{barber.name.charAt(0)}</span>
+                <Card key={barber.id} className="card-premium text-center overflow-hidden p-0 flex flex-col justify-between">
+                  <div className="relative h-72 w-full overflow-hidden bg-accent/5 group">
+                    <img 
+                      src={photoUrl} 
+                      alt={`Foto de ${barber.name}`} 
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60"></div>
                   </div>
-                  <h3 className="text-2xl font-bold mb-4">{barber.name}</h3>
-                  <button onClick={() => openBooking(barber.id)} className="w-full btn-primary">
-                    Reservar con {barber.name.split(' ')[0]}
-                  </button>
+                  <div className="p-6 pt-4">
+                    <h3 className="text-2xl font-bold mb-1">{barber.name}</h3>
+                    <p className="text-xs uppercase tracking-wider text-accent font-semibold mb-4">Especialista / Master Barber</p>
+                    <a 
+                      href={getWhatsAppLink(`Hola Barba Azul, me gustaría reservar mi cita específicamente con el barbero ${barber.name}.`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full btn-primary inline-block text-center text-sm"
+                    >
+                      Reservar con {barber.name.split(' ')[0]}
+                    </a>
+                  </div>
                 </Card>
               );
             })}
@@ -361,22 +392,22 @@ export default function Home() {
       <TestimonialsSection />
 
       {/* Differentials Section */}
-      <section className="section-padding bg-card/50">
+      <section className="section-padding bg-card/30 relative">
         <div className="container">
           <div className="text-center mb-16 reveal">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">¿Por Qué Barba Azul?</h2>
-            <p className="text-muted-foreground text-lg">Razones para elegirnos</p>
+            <p className="text-muted-foreground text-lg">El estilo barranquillero con el estándar premium más alto</p>
           </div>
 
-          <div className="border border-border rounded-xl overflow-hidden bg-card/40 divide-y divide-border md:divide-y-0 md:divide-x md:flex reveal-stagger">
+          <div className="border border-border rounded-xl overflow-hidden bg-card/40 divide-y divide-border md:divide-y-0 md:divide-x md:flex reveal-stagger shadow-lg">
             {differentials.map((diff, idx) => {
               const Icon = diff.icon;
               return (
-                <div key={idx} className="flex-1 p-6 text-center group hover:bg-muted/30 transition-colors duration-200">
-                  <div className="flex justify-center mb-3">
-                    <Icon className="w-8 h-8 text-accent transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />
+                <div key={idx} className="flex-1 p-6 text-center group hover:bg-muted/30 transition-all duration-300">
+                  <div className="flex justify-center mb-4">
+                    <Icon className="w-10 h-10 text-accent transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />
                   </div>
-                  <h3 className="text-sm font-bold mb-2">{diff.title}</h3>
+                  <h3 className="text-base font-bold mb-2">{diff.title}</h3>
                   <p className="text-muted-foreground text-xs leading-relaxed">{diff.description}</p>
                 </div>
               );
@@ -390,7 +421,7 @@ export default function Home() {
         <div className="container max-w-3xl">
           <div className="text-center mb-16 reveal">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Preguntas Frecuentes</h2>
-            <p className="text-muted-foreground text-lg">Resolvemos tus dudas</p>
+            <p className="text-muted-foreground text-lg">Resolvemos tus inquietudes para que tu experiencia sea perfecta</p>
           </div>
 
           <div className="space-y-4 reveal">
@@ -419,7 +450,7 @@ export default function Home() {
                   />
                 </div>
                 {expandedFaq === faq.id && (
-                  <p className="text-muted-foreground mt-4 animate-fade-in">{faq.answer}</p>
+                  <p className="text-muted-foreground mt-4 animate-fade-in leading-relaxed text-sm">{faq.answer}</p>
                 )}
               </Card>
             ))}
@@ -428,30 +459,37 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contacto" className="section-padding bg-card/50">
+      <section id="contacto" className="section-padding bg-card/30 relative">
         <div className="container">
           <div className="text-center mb-16 reveal">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Contacto</h2>
-            <p className="text-muted-foreground text-lg">Visítanos o ponte en contacto</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Contacto & Sede</h2>
+            <p className="text-muted-foreground text-lg">Pásate hoy mismo o agenda tu cita antes de venir</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 reveal-stagger">
             <Card className="card-premium text-center">
-              <MapPin className="w-12 h-12 text-primary mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
+              <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Ubicación</h3>
-              <p className="text-muted-foreground">Calle 71 #33-47, Barranquilla, Atlántico</p>
+              <p className="text-muted-foreground text-sm">Calle 71 #33-47, Barranquilla, Atlántico</p>
             </Card>
-            <Card className="card-premium text-center">
-              <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Teléfono</h3>
-              <a href="tel:+573007002929" className="text-primary hover:text-secondary transition-colors duration-200">
+            <Card className="card-premium text-center flex flex-col justify-between p-6">
+              <div>
+                <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2">WhatsApp / Cel</h3>
+              </div>
+              <a 
+                href={getWhatsAppLink('Hola Barba Azul, quiero hacerles una consulta.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:text-secondary font-semibold text-lg transition-colors duration-200"
+              >
                 +57 300 700 2929
               </a>
             </Card>
             <Card className="card-premium text-center">
               <Clock className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">Horarios</h3>
-              <p className="text-muted-foreground">Todos los días: 9:00 am - 9:00 pm</p>
+              <h3 className="text-xl font-bold mb-2">Horario Costeño</h3>
+              <p className="text-muted-foreground text-sm">Todos los días: 9:00 am - 9:00 pm</p>
             </Card>
           </div>
 
@@ -480,16 +518,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-background border-t border-border py-8">
         <div className="container text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Barbería Barba Azul. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Barbería Barba Azul. Tradición & Estilo. Barranquilla, Colombia.</p>
         </div>
       </footer>
-
-      {/* Booking Modal */}
-      <BookingModal 
-        isOpen={isBookingOpen}
-        onClose={() => setIsBookingOpen(false)}
-        initialBarberId={bookingBarberId}
-      />
     </div>
   );
 }

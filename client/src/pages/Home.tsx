@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Star, MapPin, Phone, Clock, ChevronDown, ChevronRight, Loader2, Camera } from 'lucide-react';
 import BookingModal from '@/components/BookingModal';
+import { TestimonialsSection } from '@/components/ui/testimonial-v2';
 import { trpc } from '@/lib/trpc';
 
 // Small decorative icon per service — purely visual, not stored in the DB.
@@ -100,27 +101,6 @@ export default function Home() {
       items: services.filter((s) => getServiceCategory(s.name) === cat),
     }))
     .filter((group) => group.items.length > 0);
-
-  // Testimonios reales, tomados de las reseñas de Google de Barba Azul
-  // (las mismas 2 que ya usamos en el sitio estático).
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Michael C.',
-      rating: 5,
-      quote: 'Una actitud excelente y un fade impecable',
-      comment: 'El equipo se nota cómodo con cualquier estilo, especialmente con degradados y cortes modernos. Totalmente recomendados para un buen corte de cabello.',
-      source: 'Reseña de Google · hace 5 meses',
-    },
-    {
-      id: 2,
-      name: 'Jonathan Y.',
-      rating: 5,
-      quote: 'La mejor barbería de Barranquilla',
-      comment: 'Muy contento con el servicio. El ambiente es súper tranquilo y todo el equipo sabe demasiado de su oficio.',
-      source: 'Reseña de Google · hace 4 meses',
-    },
-  ];
 
   // FAQ data
   const faqs = [
@@ -373,31 +353,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="section-padding">
-        <div className="container">
-          <div className="text-center mb-16 reveal">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Lo que Dicen Nuestros Clientes</h2>
-            <p className="text-muted-foreground text-lg">4.8★ en Google, basado en 497 opiniones</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto reveal-stagger">
-            {testimonials.map((testimonial) => (
-              <Card key={testimonial.id} className="card-premium">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="text-lg font-semibold mb-3">"{testimonial.quote}"</p>
-                <p className="text-foreground mb-4">{testimonial.comment}</p>
-                <p className="font-semibold text-primary">{testimonial.name}</p>
-                <p className="text-xs text-muted-foreground">{testimonial.source}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection />
 
       {/* Differentials Section */}
       <section className="section-padding bg-card/50">

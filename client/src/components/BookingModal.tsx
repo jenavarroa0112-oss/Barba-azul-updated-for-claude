@@ -126,7 +126,7 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
 
         <div className="space-y-6">
           {/* Progress Bar */}
-          <div className="flex gap-2">
+          <div className="flex gap-2" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={5}>
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
@@ -142,23 +142,32 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Selecciona un Servicio</h3>
               {servicesQuery.isLoading ? (
-                <p className="text-muted-foreground">Cargando servicios...</p>
+                <p className="text-muted-foreground" aria-live="polite">Cargando servicios…</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {services.map((service) => (
                     <Card
                       key={service.id}
-                      className={`p-4 cursor-pointer border-2 transition-all ${
+                      role="radio"
+                      aria-checked={selectedService === service.id.toString()}
+                      tabIndex={0}
+                      className={`p-4 cursor-pointer border-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
                         selectedService === service.id.toString()
                           ? 'border-accent bg-accent/10'
                           : 'border-border hover:border-accent/50'
                       }`}
                       onClick={() => setSelectedService(service.id.toString())}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedService(service.id.toString());
+                        }
+                      }}
                     >
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="font-semibold">{service.name}</p>
-                          <p className="text-sm text-accent">${service.price}</p>
+                          <p className="text-sm text-accent">${Math.round(parseFloat(service.price)).toLocaleString('es-CO')} COP</p>
                         </div>
                         <div className={`w-5 h-5 rounded border-2 ${
                           selectedService === service.id.toString()
@@ -178,18 +187,27 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Selecciona tu Barbero</h3>
               {barbersQuery.isLoading ? (
-                <p className="text-muted-foreground">Cargando barberos...</p>
+                <p className="text-muted-foreground" aria-live="polite">Cargando barberos…</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {barbers.map((barber) => (
                     <Card
                       key={barber.id}
-                      className={`p-4 cursor-pointer border-2 transition-all ${
+                      role="radio"
+                      aria-checked={selectedBarber === barber.id.toString()}
+                      tabIndex={0}
+                      className={`p-4 cursor-pointer border-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
                         selectedBarber === barber.id.toString()
                           ? 'border-accent bg-accent/10'
                           : 'border-border hover:border-accent/50'
                       }`}
                       onClick={() => setSelectedBarber(barber.id.toString())}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedBarber(barber.id.toString());
+                        }
+                      }}
                     >
                       <div className="flex justify-between items-center">
                         <div>
@@ -222,16 +240,18 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
                     className="bg-background border-border"
+                    autoComplete="off"
                   />
                 </div>
-                <div>
-                  <Label>Hora Disponible</Label>
+                <fieldset className="space-y-3">
+                  <legend className="font-semibold text-sm">Hora Disponible</legend>
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                     {timeSlots.map((time) => {
                       const isTaken = takenTimes.has(time);
                       return (
                         <Button
                           key={time}
+                          type="button"
                           variant={selectedTime === time ? 'default' : 'outline'}
                           disabled={isTaken}
                           title={isTaken ? 'Ese horario ya está reservado' : undefined}
@@ -249,10 +269,10 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
                       );
                     })}
                   </div>
+                  </fieldset>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Step 4: Summary */}
           {step === 4 && (
@@ -291,7 +311,8 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="bg-background border-border"
-                    placeholder="Tu nombre"
+                    placeholder="Tu nombre completo…"
+                    autoComplete="name"
                   />
                 </div>
                 <div>
@@ -302,17 +323,23 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="bg-background border-border"
-                    placeholder="tu@email.com"
+                    placeholder="tu@email.com…"
+                    autoComplete="email"
+                    spellCheck={false}
                   />
                 </div>
                 <div>
                   <Label htmlFor="phone">Teléfono</Label>
                   <Input
                     id="phone"
+                    type="tel"
+                    inputMode="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="bg-background border-border"
-                    placeholder="+57 300 000 0000"
+                    placeholder="+57 300 000 0000…"
+                    autoComplete="tel"
+                    spellCheck={false}
                   />
                 </div>
               </div>
@@ -324,16 +351,18 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
             <Button
               onClick={handlePrev}
               variant="outline"
+              type="button"
               className={step === 1 ? 'opacity-50 cursor-not-allowed' : ''}
               disabled={step === 1}
             >
-              <ChevronLeft className="w-4 h-4 mr-2" />
+              <ChevronLeft className="w-4 h-4 mr-2" aria-hidden="true" />
               Anterior
             </Button>
 
             {step < 5 ? (
               <Button
                 onClick={handleNext}
+                type="button"
                 className="btn-primary"
                 disabled={
                   (step === 1 && !selectedService) ||
@@ -342,15 +371,16 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
                 }
               >
                 Siguiente
-                <ChevronRight className="w-4 h-4 ml-2" />
+                <ChevronRight className="w-4 h-4 ml-2" aria-hidden="true" />
               </Button>
             ) : (
               <Button
                 onClick={handleSubmit}
+                type="button"
                 className="btn-primary"
                 disabled={!name || !email || !phone || createBookingMutation.isPending}
               >
-                {createBookingMutation.isPending ? 'Confirmando...' : 'Confirmar Reserva'}
+                {createBookingMutation.isPending ? 'Confirmando…' : 'Confirmar Reserva'}
               </Button>
             )}
           </div>

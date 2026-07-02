@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
-import { Star, MapPin, Phone, Clock, ChevronDown, ChevronRight, Loader2, Camera } from 'lucide-react';
+import { 
+  Star, MapPin, Phone, Clock, ChevronDown, ChevronRight, Loader2, Camera,
+  Scissors, Sparkles, Smile, Target, Award, ShieldCheck, Zap, User
+} from 'lucide-react';
 import BookingModal from '@/components/BookingModal';
 import { TestimonialsSection } from '@/components/ui/testimonial-v2';
 import { trpc } from '@/lib/trpc';
@@ -8,14 +11,15 @@ import { trpc } from '@/lib/trpc';
 // Small decorative icon per service — purely visual, not stored in the DB.
 function getServiceIcon(name: string) {
   const n = name.toLowerCase();
-  if (n.includes('combo')) return '🎯';
-  if (n.includes('fade') || n.includes('degradado')) return '✨';
-  if (n.includes('afeitado')) return '🪒';
-  if (n.includes('mascarilla') || n.includes('facial')) return '💆';
-  if (n.includes('ceja')) return '👁️';
-  if (n.includes('niño')) return '🧒';
-  if (n.includes('barba')) return '🧔';
-  return '✂️';
+  const className = "w-8 h-8 text-accent transition-transform duration-300 group-hover:scale-110";
+  if (n.includes('combo')) return <Target className={className} aria-hidden="true" />;
+  if (n.includes('fade') || n.includes('degradado')) return <Sparkles className={className} aria-hidden="true" />;
+  if (n.includes('afeitado')) return <Scissors className={className} aria-hidden="true" />;
+  if (n.includes('mascarilla') || n.includes('facial')) return <Award className={className} aria-hidden="true" />;
+  if (n.includes('ceja')) return <Sparkles className={className} aria-hidden="true" />;
+  if (n.includes('niño')) return <Smile className={className} aria-hidden="true" />;
+  if (n.includes('barba')) return <Scissors className={className} aria-hidden="true" />;
+  return <Scissors className={className} aria-hidden="true" />;
 }
 
 // DB stores price as a numeric string (e.g. "25000.00") in COP.
@@ -129,27 +133,27 @@ export default function Home() {
   // Differentials
   const differentials = [
     {
-      icon: '👨‍💼',
+      icon: ShieldCheck,
       title: 'Barberos Expertos',
       description: 'Profesionales certificados con años de experiencia en barbería premium.'
     },
     {
-      icon: '✂️',
+      icon: Scissors,
       title: 'Calidad del Corte',
       description: 'Técnicas precisas y acabados impecables en cada servicio.'
     },
     {
-      icon: '⚡',
+      icon: Zap,
       title: 'Rapidez',
       description: 'Servicios eficientes sin comprometer la calidad del resultado.'
     },
     {
-      icon: '🎯',
+      icon: Target,
       title: 'Experiencia Inigualable',
       description: 'Ambiente premium con atención personalizada y profesional.'
     },
     {
-      icon: '👔',
+      icon: Award,
       title: 'Atención Profesional',
       description: 'Servicio de clase mundial con detalles que marcan la diferencia.'
     }
@@ -160,7 +164,7 @@ export default function Home() {
       {/* Navigation — becomes opaque + blurred after scrolling past the hero */}
       <nav className={`fixed top-0 w-full border-b border-border z-50 transition-all duration-300 ${navScrolled ? 'navbar-scrolled' : 'bg-background/80 backdrop-blur-md'}`}>
         <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-primary tracking-tight">BARBA AZUL</h1>
+          <a href="#" className="text-2xl font-bold text-primary tracking-tight" translate="no">BARBA AZUL</a>
           <div className="hidden md:flex gap-8">
             <a href="#servicios" className="hover:text-primary transition-colors duration-200">Servicios</a>
             <a href="#galeria" className="hover:text-primary transition-colors duration-200">Galería</a>
@@ -183,9 +187,9 @@ export default function Home() {
         
         <div className="relative z-10 container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
               Experiencia <span className="brand-emphasis">Premium</span> en Barbería
-            </h2>
+            </h1>
             <p className="text-xl text-muted-foreground max-w-lg animate-fade-in-delay">
               Calidad internacional, cercanía local. Descubre la barbería que define el estándar de excelencia en Barranquilla.
             </p>
@@ -214,12 +218,12 @@ export default function Home() {
           </div>
 
           {servicesQuery.isLoading && (
-            <div className="flex justify-center py-12 text-muted-foreground">
-              <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando servicios...
+            <div className="flex justify-center py-12 text-muted-foreground" aria-live="polite">
+              <Loader2 className="w-6 h-6 animate-spin mr-2" aria-hidden="true" /> Cargando servicios…
             </div>
           )}
           {servicesQuery.isError && (
-            <p className="text-center text-muted-foreground py-12">
+            <p className="text-center text-muted-foreground py-12" role="alert">
               No pudimos cargar los servicios. Intenta de nuevo más tarde.
             </p>
           )}
@@ -234,11 +238,11 @@ export default function Home() {
             <div className="mb-14 reveal-stagger">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {combos.map((service) => (
-                  <Card key={service.id} className="card-premium group cursor-pointer relative overflow-hidden">
+                  <Card key={service.id} className="card-premium group relative overflow-hidden">
                     <span className="inline-block text-[11px] uppercase tracking-widest font-semibold text-accent border border-accent/40 rounded-full px-2.5 py-1 mb-4">
                       Combo
                     </span>
-                    <div className="text-3xl mb-3 transition-transform duration-300 group-hover:scale-110">{getServiceIcon(service.name)}</div>
+                    <div className="mb-3">{getServiceIcon(service.name)}</div>
                     <h3 className="text-lg font-bold mb-1">{service.name}</h3>
                     <p className="price-serif text-accent text-xl font-semibold mb-1">{formatCOP(service.price)}</p>
                     <p className="text-muted-foreground text-xs mb-3">{service.durationMinutes} min aprox.</p>
@@ -268,9 +272,10 @@ export default function Home() {
                       key={service.id}
                       onClick={() => openBooking()}
                       className="service-row w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+                      aria-label={`Reservar ${service.name} - ${formatCOP(service.price)}`}
                     >
                       <span className="flex items-center gap-3 min-w-0">
-                        <span className="text-2xl shrink-0">{getServiceIcon(service.name)}</span>
+                        <span className="shrink-0">{getServiceIcon(service.name)}</span>
                         <span className="min-w-0">
                           <span className="block font-semibold truncate">{service.name}</span>
                           <span className="block text-xs text-muted-foreground">{service.durationMinutes} min aprox.</span>
@@ -278,7 +283,7 @@ export default function Home() {
                       </span>
                       <span className="flex items-center gap-3 shrink-0">
                         <span className="price-serif text-accent font-semibold">{formatCOP(service.price)}</span>
-                        <ChevronRight className="service-row-arrow w-4 h-4 text-primary" />
+                        <ChevronRight className="service-row-arrow w-4 h-4 text-primary" aria-hidden="true" />
                       </span>
                     </button>
                   ))}
@@ -319,12 +324,12 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {barbersQuery.isLoading && (
-              <div className="col-span-full flex justify-center py-12 text-muted-foreground">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando barberos...
+              <div className="col-span-full flex justify-center py-12 text-muted-foreground" aria-live="polite">
+                <Loader2 className="w-6 h-6 animate-spin mr-2" aria-hidden="true" /> Cargando barberos…
               </div>
             )}
             {barbersQuery.isError && (
-              <p className="col-span-full text-center text-muted-foreground">
+              <p className="col-span-full text-center text-muted-foreground" role="alert">
                 No pudimos cargar el equipo. Intenta de nuevo más tarde.
               </p>
             )}
@@ -364,13 +369,18 @@ export default function Home() {
           </div>
 
           <div className="border border-border rounded-xl overflow-hidden bg-card/40 divide-y divide-border md:divide-y-0 md:divide-x md:flex reveal-stagger">
-            {differentials.map((diff, idx) => (
-              <div key={idx} className="flex-1 p-6 text-center group hover:bg-muted transition-colors duration-200">
-                <div className="text-3xl mb-3 transition-transform duration-300 group-hover:scale-110">{diff.icon}</div>
-                <h3 className="text-sm font-bold mb-2">{diff.title}</h3>
-                <p className="text-muted-foreground text-xs leading-relaxed">{diff.description}</p>
-              </div>
-            ))}
+            {differentials.map((diff, idx) => {
+              const Icon = diff.icon;
+              return (
+                <div key={idx} className="flex-1 p-6 text-center group hover:bg-muted/30 transition-colors duration-200">
+                  <div className="flex justify-center mb-3">
+                    <Icon className="w-8 h-8 text-accent transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-sm font-bold mb-2">{diff.title}</h3>
+                  <p className="text-muted-foreground text-xs leading-relaxed">{diff.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -387,8 +397,17 @@ export default function Home() {
             {faqs.map((faq) => (
               <Card 
                 key={faq.id}
-                className="card-premium cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-expanded={expandedFaq === faq.id}
+                className="card-premium cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setExpandedFaq(expandedFaq === faq.id ? null : faq.id);
+                  }
+                }}
               >
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold">{faq.question}</h3>
@@ -396,6 +415,7 @@ export default function Home() {
                     className={`w-5 h-5 text-primary transition-transform duration-300 ${
                       expandedFaq === faq.id ? 'rotate-180' : ''
                     }`}
+                    aria-hidden="true"
                   />
                 </div>
                 {expandedFaq === faq.id && (

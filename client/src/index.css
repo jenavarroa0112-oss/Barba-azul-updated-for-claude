@@ -43,6 +43,7 @@
 }
 
 :root {
+  color-scheme: dark;
   /* Barba Azul brand blue — dominant, used for CTAs, nav, icons, interactive states */
   --primary: oklch(0.56 0.19 259);
   --primary-foreground: oklch(0.98 0.012 259);
@@ -164,10 +165,7 @@
     padding-right: 1rem;
   }
 
-  .flex {
-    min-height: 0;
-    min-width: 0;
-  }
+  /* Deprecating global .flex min overrides to prevent layout regressions. Use explicit min-w-0 / min-h-0 utility classes where truncation is needed. */
 
   @media (min-width: 640px) {
     .container {
@@ -227,7 +225,10 @@ html {
 .reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 0.12s; opacity: 1; transform: none; }
 .reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 0.19s; opacity: 1; transform: none; }
 .reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 0.26s; opacity: 1; transform: none; }
-.reveal-stagger.is-visible > *:nth-child(n+5) { transition-delay: 0.33s; opacity: 1; transform: none; }
+.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 0.33s; opacity: 1; transform: none; }
+.reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 0.40s; opacity: 1; transform: none; }
+.reveal-stagger.is-visible > *:nth-child(7) { transition-delay: 0.47s; opacity: 1; transform: none; }
+.reveal-stagger.is-visible > *:nth-child(n+8) { transition-delay: 0.54s; opacity: 1; transform: none; }
 
 /* ── Hero fade-in (fires immediately, no scroll needed) ────── */
 @keyframes fadeIn {
@@ -263,9 +264,13 @@ html {
 
 /* ── Card hover: real CSS transform lift (no @keyframes) ──── */
 .card-premium {
-  @apply bg-card border border-border rounded-xl p-6 transition-all duration-300;
+  @apply bg-card border border-border rounded-xl p-6;
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              background-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .card-premium:hover {
@@ -325,6 +330,7 @@ html {
 /* ── Prices set in the display serif, like a real price board ─ */
 .price-serif {
   font-family: 'Playfair Display', serif;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Service menu row (barbershop price-board signature) ──── */

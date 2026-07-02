@@ -191,9 +191,18 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-primary/20">
-          <div className="absolute inset-0 bg-black/40"></div>
-        </div>
+        {/* High-quality background image from local public assets */}
+        <div 
+          className="absolute inset-0 bg-[url('/images/imagen_hero.png')] bg-cover bg-center bg-no-repeat"
+          aria-hidden="true"
+        />
+        {/* Left-to-right editorial gradient overlay to guarantee text readability while showcasing the image */}
+        <div 
+          className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background md:bg-gradient-to-r md:from-background/95 md:via-background/85 md:to-background/20 z-0" 
+          aria-hidden="true"
+        />
+        {/* Global slight dark overlay for consistent text pop */}
+        <div className="absolute inset-0 bg-black/25 z-0" aria-hidden="true" />
         
         <div className="relative z-10 container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">

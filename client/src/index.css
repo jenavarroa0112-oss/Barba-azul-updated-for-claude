@@ -43,8 +43,9 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
+  /* Barba Azul brand blue — dominant, used for CTAs, nav, icons, interactive states */
+  --primary: oklch(0.56 0.19 259);
+  --primary-foreground: oklch(0.98 0.012 259);
   --sidebar-primary: var(--color-blue-600);
   --sidebar-primary-foreground: var(--color-blue-50);
   --chart-1: var(--color-blue-300);
@@ -53,64 +54,66 @@
   --chart-4: var(--color-blue-700);
   --chart-5: var(--color-blue-800);
   --radius: 0.65rem;
-  --background: oklch(0.08 0.01 260);
-  --foreground: oklch(0.95 0.01 260);
-  --card: oklch(0.12 0.01 260);
-  --card-foreground: oklch(0.95 0.01 260);
-  --popover: oklch(0.12 0.01 260);
-  --popover-foreground: oklch(0.95 0.01 260);
-  --secondary: oklch(0.65 0.2 40);
-  --secondary-foreground: oklch(0.08 0.01 260);
-  --muted: oklch(0.3 0.02 260);
-  --muted-foreground: oklch(0.7 0.02 260);
-  --accent: oklch(0.65 0.2 40);
-  --accent-foreground: oklch(0.08 0.01 260);
+  --background: oklch(0.09 0.028 258);
+  --foreground: oklch(0.96 0.006 90);
+  --card: oklch(0.135 0.032 258);
+  --card-foreground: oklch(0.96 0.006 90);
+  --popover: oklch(0.135 0.032 258);
+  --popover-foreground: oklch(0.96 0.006 90);
+  /* Lighter blue — used for hover states on primary elements */
+  --secondary: oklch(0.66 0.15 250);
+  --secondary-foreground: oklch(0.12 0.02 259);
+  --muted: oklch(0.26 0.03 258);
+  --muted-foreground: oklch(0.68 0.02 258);
+  /* Warm brass/gold — sparse premium accent: prices, ratings, shimmer only */
+  --accent: oklch(0.74 0.12 82);
+  --accent-foreground: oklch(0.16 0.02 82);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.2 0.02 260);
-  --input: oklch(0.15 0.01 260);
-  --ring: oklch(0.65 0.2 40);
-  --sidebar: oklch(0.12 0.01 260);
-  --sidebar-foreground: oklch(0.95 0.01 260);
-  --sidebar-accent: oklch(0.65 0.2 40);
-  --sidebar-accent-foreground: oklch(0.08 0.01 260);
-  --sidebar-border: oklch(0.2 0.02 260);
-  --sidebar-ring: oklch(0.65 0.2 40);
+  --border: oklch(0.24 0.035 258);
+  --input: oklch(0.16 0.025 258);
+  --ring: oklch(0.56 0.19 259);
+  --sidebar: oklch(0.135 0.032 258);
+  --sidebar-foreground: oklch(0.96 0.006 90);
+  --sidebar-accent: oklch(0.74 0.12 82);
+  --sidebar-accent-foreground: oklch(0.16 0.02 82);
+  --sidebar-border: oklch(0.24 0.035 258);
+  --sidebar-ring: oklch(0.56 0.19 259);
 }
 
 .dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
+  --primary: oklch(0.56 0.19 259);
+  --primary-foreground: oklch(0.98 0.012 259);
   --sidebar-primary: var(--color-blue-500);
   --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.08 0.01 260);
-  --foreground: oklch(0.95 0.01 260);
-  --card: oklch(0.12 0.01 260);
-  --card-foreground: oklch(0.95 0.01 260);
-  --popover: oklch(0.12 0.01 260);
-  --popover-foreground: oklch(0.95 0.01 260);
-  --secondary: oklch(0.65 0.2 40);
-  --secondary-foreground: oklch(0.08 0.01 260);
-  --muted: oklch(0.3 0.02 260);
-  --muted-foreground: oklch(0.7 0.02 260);
-  --accent: oklch(0.65 0.2 40);
-  --accent-foreground: oklch(0.08 0.01 260);
+  --background: oklch(0.09 0.028 258);
+  --foreground: oklch(0.96 0.006 90);
+  --card: oklch(0.135 0.032 258);
+  --card-foreground: oklch(0.96 0.006 90);
+  --popover: oklch(0.135 0.032 258);
+  --popover-foreground: oklch(0.96 0.006 90);
+  --secondary: oklch(0.66 0.15 250);
+  --secondary-foreground: oklch(0.12 0.02 259);
+  --muted: oklch(0.26 0.03 258);
+  --muted-foreground: oklch(0.68 0.02 258);
+  --accent: oklch(0.74 0.12 82);
+  --accent-foreground: oklch(0.16 0.02 82);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.2 0.02 260);
-  --input: oklch(0.15 0.01 260);
-  --ring: oklch(0.65 0.2 40);
+  --border: oklch(0.24 0.035 258);
+  --input: oklch(0.16 0.025 258);
+  --ring: oklch(0.56 0.19 259);
   --chart-1: var(--color-blue-300);
   --chart-2: var(--color-blue-500);
   --chart-3: var(--color-blue-600);
   --chart-4: var(--color-blue-700);
   --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.12 0.01 260);
-  --sidebar-foreground: oklch(0.95 0.01 260);
-  --sidebar-accent: oklch(0.65 0.2 40);
-  --sidebar-accent-foreground: oklch(0.08 0.01 260);
-  --sidebar-border: oklch(0.2 0.02 260);
-  --sidebar-ring: oklch(0.65 0.2 40);
+  --sidebar: oklch(0.135 0.032 258);
+  --sidebar-foreground: oklch(0.96 0.006 90);
+  --sidebar-accent: oklch(0.74 0.12 82);
+  --sidebar-accent-foreground: oklch(0.16 0.02 82);
+  --sidebar-border: oklch(0.24 0.035 258);
+  --sidebar-ring: oklch(0.56 0.19 259);
 }
 
 @layer base {
@@ -124,6 +127,7 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
     font-weight: 700;
+    text-wrap: balance;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -239,25 +243,22 @@ html {
   animation: fadeIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
 }
 
-/* ── Shimmer accent bar in the hero ───────────────────────── */
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
+/* ── Hero emphasis word: solid color + underline flourish
+   (no gradient-clip-text — that's decorative, not intentional) ─ */
+.brand-emphasis {
+  color: var(--accent);
+  position: relative;
 }
-
-.shimmer-text {
-  background: linear-gradient(
-    90deg,
-    var(--accent) 0%,
-    oklch(0.85 0.2 60) 40%,
-    var(--accent) 60%,
-    oklch(0.55 0.18 30) 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3.5s linear infinite;
+.brand-emphasis::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.08em;
+  height: 0.06em;
+  background: var(--accent);
+  opacity: 0.4;
+  border-radius: 2px;
 }
 
 /* ── Card hover: real CSS transform lift (no @keyframes) ──── */
@@ -268,51 +269,84 @@ html {
 }
 
 .card-premium:hover {
-  border-color: var(--accent);
+  border-color: var(--primary);
   transform: translateY(-6px);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.35), 0 0 0 1px var(--accent) / 0.15;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
 }
 
 /* Keep the old class for the (unused) backward-compat hover-lift */
 .hover-lift:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(217, 119, 6, 0.2);
+  box-shadow: 0 20px 40px rgba(59, 110, 230, 0.2);
 }
 
 /* ── Button interactions ───────────────────────────────────── */
+/* These are applied to plain <button> elements (not shadcn's <Button>),
+   deliberately — mixing them with Button's cva default-variant classes
+   caused an unpredictable cascade conflict (that's why "Conocer Más"
+   used to render blue by accident instead of by design). */
 .btn-primary {
-  @apply px-8 py-3 bg-accent text-accent-foreground font-semibold rounded-lg
-         hover:bg-secondary cursor-pointer;
+  @apply px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-lg
+         cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;
   transition: background-color 0.25s ease, transform 0.15s ease,
               box-shadow 0.25s ease;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+  box-shadow: 0 4px 14px rgba(59, 110, 230, 0.35);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--secondary);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(217, 119, 6, 0.45);
+  box-shadow: 0 8px 20px rgba(59, 110, 230, 0.5);
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   transform: translateY(0) scale(0.97);
-  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+  box-shadow: 0 2px 8px rgba(59, 110, 230, 0.25);
 }
 
 .btn-secondary {
-  @apply px-8 py-3 border-2 border-accent text-accent font-semibold rounded-lg
-         hover:bg-accent hover:text-accent-foreground cursor-pointer;
+  @apply px-8 py-3 border-2 border-primary text-primary font-semibold rounded-lg
+         hover:bg-primary hover:text-primary-foreground cursor-pointer
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;
   transition: background-color 0.25s ease, color 0.25s ease,
               transform 0.15s ease;
 }
 
-.btn-secondary:hover { transform: translateY(-2px); }
-.btn-secondary:active { transform: translateY(0) scale(0.97); }
+.btn-secondary:hover:not(:disabled) { transform: translateY(-2px); }
+.btn-secondary:active:not(:disabled) { transform: translateY(0) scale(0.97); }
 
 /* ── Navbar scroll-aware state (applied via JS) ────────────── */
 .navbar-scrolled {
   backdrop-filter: blur(12px);
-  background-color: oklch(0.08 0.01 260 / 0.92) !important;
+  background-color: oklch(0.09 0.028 258 / 0.92) !important;
   box-shadow: 0 1px 24px rgba(0,0,0,0.4);
+}
+
+/* ── Prices set in the display serif, like a real price board ─ */
+.price-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+/* ── Service menu row (barbershop price-board signature) ──── */
+.service-row {
+  @apply bg-transparent transition-colors duration-200;
+}
+.service-row:hover {
+  background-color: var(--muted);
+}
+.service-row:hover .service-row-arrow {
+  transform: translateX(3px);
+  opacity: 1;
+}
+.service-row-arrow {
+  opacity: 0.4;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* ── Google Maps: tint the light default embed to match the
+   dark theme instead of leaving a jarring bright rectangle ── */
+.map-frame iframe {
+  filter: invert(90%) hue-rotate(185deg) contrast(90%) brightness(0.95) saturate(1.1);
 }
 
 /* ── Respect reduced-motion system preference ─────────────── */
@@ -321,7 +355,6 @@ html {
   .reveal-stagger > *,
   .animate-fade-in,
   .animate-fade-in-delay { transition: none; animation: none; opacity: 1; transform: none; }
-  .shimmer-text { animation: none; }
   .btn-primary:hover, .btn-primary:active,
   .btn-secondary:hover, .btn-secondary:active { transform: none; }
   .card-premium:hover { transform: none; }

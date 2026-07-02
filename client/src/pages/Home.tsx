@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Star, MapPin, Phone, Clock, ChevronDown, Loader2, Camera } from 'lucide-react';
+import { Star, MapPin, Phone, Clock, ChevronDown, ChevronRight, Loader2, Camera } from 'lucide-react';
 import BookingModal from '@/components/BookingModal';
 import { trpc } from '@/lib/trpc';
 
@@ -23,6 +22,25 @@ function formatCOP(price: string) {
   const value = Math.round(parseFloat(price));
   return `$${value.toLocaleString('es-CO')} COP`;
 }
+
+// Groups the flat services list into a real menu structure — combos get
+// their own featured cards, everything else is grouped under a category
+// so 12 services don't render as one undifferentiated wall of cards.
+type ServiceCategory = 'combos' | 'cortes' | 'barba' | 'extras';
+
+function getServiceCategory(name: string): ServiceCategory {
+  const n = name.toLowerCase();
+  if (n.includes('combo')) return 'combos';
+  if (n.includes('corte') || n.includes('fade') || n.includes('degradado')) return 'cortes';
+  if (n.includes('barba') || n.includes('afeitado')) return 'barba';
+  return 'extras';
+}
+
+const CATEGORY_LABELS: Record<Exclude<ServiceCategory, 'combos'>, string> = {
+  cortes: 'Cortes & Estilo',
+  barba: 'Barba & Afeitado',
+  extras: 'Cuidado & Extras',
+};
 
 export default function Home() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -73,6 +91,15 @@ export default function Home() {
   const barbersQuery = trpc.barbers.list.useQuery();
   const services = servicesQuery.data || [];
   const barbers = barbersQuery.data || [];
+
+  const combos = services.filter((s) => getServiceCategory(s.name) === 'combos');
+  const individualByCategory = (['cortes', 'barba', 'extras'] as const)
+    .map((cat) => ({
+      key: cat,
+      label: CATEGORY_LABELS[cat],
+      items: services.filter((s) => getServiceCategory(s.name) === cat),
+    }))
+    .filter((group) => group.items.length > 0);
 
   // Testimonios reales, tomados de las reseñas de Google de Barba Azul
   // (las mismas 2 que ya usamos en el sitio estático).
@@ -153,19 +180,16 @@ export default function Home() {
       {/* Navigation — becomes opaque + blurred after scrolling past the hero */}
       <nav className={`fixed top-0 w-full border-b border-border z-50 transition-all duration-300 ${navScrolled ? 'navbar-scrolled' : 'bg-background/80 backdrop-blur-md'}`}>
         <div className="container flex items-center justify-between h-16">
-          <h1 className="text-2xl font-bold text-accent">BARBA AZUL</h1>
+          <h1 className="text-2xl font-bold text-primary tracking-tight">BARBA AZUL</h1>
           <div className="hidden md:flex gap-8">
-            <a href="#servicios" className="hover:text-accent transition-colors duration-200">Servicios</a>
-            <a href="#galeria" className="hover:text-accent transition-colors duration-200">Galería</a>
-            <a href="#barberos" className="hover:text-accent transition-colors duration-200">Barberos</a>
-            <a href="#contacto" className="hover:text-accent transition-colors duration-200">Contacto</a>
+            <a href="#servicios" className="hover:text-primary transition-colors duration-200">Servicios</a>
+            <a href="#galeria" className="hover:text-primary transition-colors duration-200">Galería</a>
+            <a href="#barberos" className="hover:text-primary transition-colors duration-200">Barberos</a>
+            <a href="#contacto" className="hover:text-primary transition-colors duration-200">Contacto</a>
           </div>
-          <Button 
-            onClick={() => openBooking()}
-            className="btn-primary"
-          >
+          <button onClick={() => openBooking()} className="btn-primary">
             Reservar Cita
-          </Button>
+          </button>
         </div>
       </nav>
 
@@ -173,34 +197,33 @@ export default function Home() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
         {/* No real photo of the shop yet — a gradient instead of a broken/missing
             image. Swap this div for a real background photo once you have one. */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/10">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/15">
           <div className="absolute inset-0 bg-black/30"></div>
         </div>
         
         <div className="relative z-10 container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
             <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-              Experiencia <span className="shimmer-text">Premium</span> en Barbería
+              Experiencia <span className="brand-emphasis">Premium</span> en Barbería
             </h2>
             <p className="text-xl text-muted-foreground max-w-lg animate-fade-in-delay">
               Calidad internacional, cercanía local. Descubre la barbería que define el estándar de excelencia en Barranquilla.
             </p>
             <div className="flex gap-4 animate-fade-in-delay">
-              <Button 
-                onClick={() => openBooking()}
-                className="btn-primary text-lg"
-              >
+              <button onClick={() => openBooking()} className="btn-primary text-lg">
                 Reservar mi Cita
-              </Button>
-              <Button className="btn-secondary text-lg">
+              </button>
+              <a href="#servicios" className="btn-secondary text-lg inline-flex items-center justify-center">
                 Conocer Más
-              </Button>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
+      {/* Services Section — combos as featured cards, everything else as a
+          categorized menu list. A wall of 12 identical cards was the #1
+          complaint; a real barbershop price board doesn't look like that. */}
       <section id="servicios" className="section-padding bg-card/50">
         <div className="container">
           <div className="text-center mb-16 reveal">
@@ -210,40 +233,82 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 reveal-stagger">
-            {servicesQuery.isLoading && (
-              <div className="col-span-full flex justify-center py-12 text-muted-foreground">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando servicios...
+          {servicesQuery.isLoading && (
+            <div className="flex justify-center py-12 text-muted-foreground">
+              <Loader2 className="w-6 h-6 animate-spin mr-2" /> Cargando servicios...
+            </div>
+          )}
+          {servicesQuery.isError && (
+            <p className="text-center text-muted-foreground py-12">
+              No pudimos cargar los servicios. Intenta de nuevo más tarde.
+            </p>
+          )}
+          {!servicesQuery.isLoading && !servicesQuery.isError && services.length === 0 && (
+            <p className="text-center text-muted-foreground py-12">
+              Pronto publicaremos el catálogo de servicios aquí.
+            </p>
+          )}
+
+          {/* Combos — the upsell, small in number, deserve visual weight */}
+          {combos.length > 0 && (
+            <div className="mb-14 reveal-stagger">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {combos.map((service) => (
+                  <Card key={service.id} className="card-premium group cursor-pointer relative overflow-hidden">
+                    <span className="inline-block text-[11px] uppercase tracking-widest font-semibold text-accent border border-accent/40 rounded-full px-2.5 py-1 mb-4">
+                      Combo
+                    </span>
+                    <div className="text-3xl mb-3 transition-transform duration-300 group-hover:scale-110">{getServiceIcon(service.name)}</div>
+                    <h3 className="text-lg font-bold mb-1">{service.name}</h3>
+                    <p className="price-serif text-accent text-xl font-semibold mb-1">{formatCOP(service.price)}</p>
+                    <p className="text-muted-foreground text-xs mb-3">{service.durationMinutes} min aprox.</p>
+                    <p className="text-muted-foreground text-sm mb-4">{service.description}</p>
+                    <button onClick={() => openBooking()} className="w-full btn-primary text-sm">
+                      Reservar
+                    </button>
+                  </Card>
+                ))}
               </div>
-            )}
-            {servicesQuery.isError && (
-              <p className="col-span-full text-center text-muted-foreground">
-                No pudimos cargar los servicios. Intenta de nuevo más tarde.
-              </p>
-            )}
-            {!servicesQuery.isLoading && !servicesQuery.isError && services.length === 0 && (
-              <p className="col-span-full text-center text-muted-foreground">
-                Pronto publicaremos el catálogo de servicios aquí.
-              </p>
-            )}
-            {services.map((service) => (
-              <Card key={service.id} className="card-premium group cursor-pointer">
-                <div className="text-4xl mb-4 transition-transform duration-300 group-hover:scale-110">{getServiceIcon(service.name)}</div>
-                <h3 className="text-xl font-bold mb-2">{service.name}</h3>
-                <p className="text-accent text-lg font-semibold mb-1">{formatCOP(service.price)}*</p>
-                <p className="text-muted-foreground text-xs mb-3">{service.durationMinutes} min aprox.</p>
-                <p className="text-muted-foreground text-sm">{service.description}</p>
-                <Button 
-                  onClick={() => openBooking()}
-                  className="w-full mt-4 btn-primary text-sm"
-                >
-                  Reservar
-                </Button>
-              </Card>
+            </div>
+          )}
+
+          {/* Individual services — barbershop price-board style, grouped by category */}
+          <div className="space-y-10 max-w-3xl mx-auto reveal-stagger">
+            {individualByCategory.map((group) => (
+              <div key={group.key}>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xs uppercase tracking-widest text-primary font-semibold whitespace-nowrap">
+                    {group.label}
+                  </span>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+                <div className="border border-border rounded-xl overflow-hidden divide-y divide-border bg-card/40">
+                  {group.items.map((service) => (
+                    <button
+                      key={service.id}
+                      onClick={() => openBooking()}
+                      className="service-row w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+                    >
+                      <span className="flex items-center gap-3 min-w-0">
+                        <span className="text-2xl shrink-0">{getServiceIcon(service.name)}</span>
+                        <span className="min-w-0">
+                          <span className="block font-semibold truncate">{service.name}</span>
+                          <span className="block text-xs text-muted-foreground">{service.durationMinutes} min aprox.</span>
+                        </span>
+                      </span>
+                      <span className="flex items-center gap-3 shrink-0">
+                        <span className="price-serif text-accent font-semibold">{formatCOP(service.price)}</span>
+                        <ChevronRight className="service-row-arrow w-4 h-4 text-primary" />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
+
           {services.length > 0 && (
-            <p className="text-xs text-muted-foreground text-center mt-6">*Precios estimados, sujetos a confirmación.</p>
+            <p className="text-xs text-muted-foreground text-center mt-8">*Precios estimados, sujetos a confirmación.</p>
           )}
         </div>
       </section>
@@ -298,12 +363,9 @@ export default function Home() {
                     <span className="text-6xl font-bold text-accent">{barber.name.charAt(0)}</span>
                   </div>
                   <h3 className="text-2xl font-bold mb-4">{barber.name}</h3>
-                  <Button 
-                    onClick={() => openBooking(barber.id)}
-                    className="w-full btn-primary"
-                  >
+                  <button onClick={() => openBooking(barber.id)} className="w-full btn-primary">
                     Reservar con {barber.name.split(' ')[0]}
-                  </Button>
+                  </button>
                 </Card>
               );
             })}
@@ -329,7 +391,7 @@ export default function Home() {
                 </div>
                 <p className="text-lg font-semibold mb-3">"{testimonial.quote}"</p>
                 <p className="text-foreground mb-4">{testimonial.comment}</p>
-                <p className="font-semibold text-accent">{testimonial.name}</p>
+                <p className="font-semibold text-primary">{testimonial.name}</p>
                 <p className="text-xs text-muted-foreground">{testimonial.source}</p>
               </Card>
             ))}
@@ -345,13 +407,13 @@ export default function Home() {
             <p className="text-muted-foreground text-lg">Razones para elegirnos</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 reveal-stagger">
+          <div className="border border-border rounded-xl overflow-hidden bg-card/40 divide-y divide-border md:divide-y-0 md:divide-x md:flex reveal-stagger">
             {differentials.map((diff, idx) => (
-              <Card key={idx} className="card-premium text-center group">
-                <div className="text-5xl mb-4 transition-transform duration-300 group-hover:scale-125">{diff.icon}</div>
-                <h3 className="text-lg font-bold mb-3">{diff.title}</h3>
-                <p className="text-muted-foreground text-sm">{diff.description}</p>
-              </Card>
+              <div key={idx} className="flex-1 p-6 text-center group hover:bg-muted transition-colors duration-200">
+                <div className="text-3xl mb-3 transition-transform duration-300 group-hover:scale-110">{diff.icon}</div>
+                <h3 className="text-sm font-bold mb-2">{diff.title}</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">{diff.description}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -375,7 +437,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold">{faq.question}</h3>
                   <ChevronDown 
-                    className={`w-5 h-5 text-accent transition-transform duration-300 ${
+                    className={`w-5 h-5 text-primary transition-transform duration-300 ${
                       expandedFaq === faq.id ? 'rotate-180' : ''
                     }`}
                   />
@@ -399,25 +461,25 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 reveal-stagger">
             <Card className="card-premium text-center">
-              <MapPin className="w-12 h-12 text-accent mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
+              <MapPin className="w-12 h-12 text-primary mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
               <h3 className="text-xl font-bold mb-2">Ubicación</h3>
               <p className="text-muted-foreground">Calle 71 #33-47, Barranquilla, Atlántico</p>
             </Card>
             <Card className="card-premium text-center">
-              <Phone className="w-12 h-12 text-accent mx-auto mb-4" />
+              <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Teléfono</h3>
-              <a href="tel:+573007002929" className="text-accent hover:text-secondary transition-colors duration-200">
+              <a href="tel:+573007002929" className="text-primary hover:text-secondary transition-colors duration-200">
                 +57 300 700 2929
               </a>
             </Card>
             <Card className="card-premium text-center">
-              <Clock className="w-12 h-12 text-accent mx-auto mb-4" />
+              <Clock className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Horarios</h3>
               <p className="text-muted-foreground">Todos los días: 9:00 am - 9:00 pm</p>
             </Card>
           </div>
 
-          <div className="bg-card border border-border rounded-lg overflow-hidden h-96 reveal">
+          <div className="relative border border-primary/20 rounded-xl overflow-hidden h-96 reveal map-frame">
             <iframe
               src="https://www.google.com/maps?q=10.9821957,-74.8109534&z=16&output=embed"
               width="100%"
@@ -425,7 +487,16 @@ export default function Home() {
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
+              title="Ubicación de Barba Azul en el mapa"
             ></iframe>
+            <a
+              href="https://www.google.com/maps?q=10.9821957,-74.8109534&z=16"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute top-4 right-4 bg-card/95 border border-border text-primary text-sm font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-primary hover:text-primary-foreground transition-colors duration-200"
+            >
+              Abrir en Google Maps
+            </a>
           </div>
         </div>
       </section>

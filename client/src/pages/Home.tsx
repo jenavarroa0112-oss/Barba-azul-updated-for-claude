@@ -252,7 +252,7 @@ export default function Home() {
           {/* Combos — the upsell, small in number, deserve visual weight */}
           {combos.length > 0 && (
             <div className="mb-14 reveal-stagger">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {combos.map((service) => (
                   <Card key={service.id} className="card-premium group cursor-pointer relative overflow-hidden">
                     <span className="inline-block text-[11px] uppercase tracking-widest font-semibold text-accent border border-accent/40 rounded-full px-2.5 py-1 mb-4">

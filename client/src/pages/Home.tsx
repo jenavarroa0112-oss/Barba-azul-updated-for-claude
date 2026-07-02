@@ -4,17 +4,10 @@ import {
   MapPin, Phone, Clock, ChevronDown, ChevronRight, Loader2, Camera,
   Scissors, Sparkles, Smile, Target, Award, ShieldCheck, Zap
 } from 'lucide-react';
+import BookingModal from '@/components/BookingModal';
 import { TestimonialsSection } from '@/components/ui/testimonial-v2';
 import { trpc } from '@/lib/trpc';
 
-// WhatsApp direct booking configuration
-const PHONE = '573007002929';
-
-function getWhatsAppLink(message: string) {
-  return `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
-}
-
-// Barber photo mapping — authentic faces for our master barbers
 const BARBER_PHOTOS: Record<string, string> = {
   'Wilfredo': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400&h=500',
   'Jairo': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400&h=500',
@@ -22,7 +15,6 @@ const BARBER_PHOTOS: Record<string, string> = {
   'Daniel': 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400&h=500',
 };
 
-// Fallback for names not in the mapping
 const DEFAULT_BARBER_PHOTO = 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=400&h=500';
 
 function getBarberPhoto(name: string) {
@@ -30,7 +22,6 @@ function getBarberPhoto(name: string) {
   return BARBER_PHOTOS[first] || DEFAULT_BARBER_PHOTO;
 }
 
-// Small decorative icon per service — purely visual
 function getServiceIcon(name: string) {
   const n = name.toLowerCase();
   const className = "w-8 h-8 text-accent transition-transform duration-300 group-hover:scale-110";
@@ -44,7 +35,6 @@ function getServiceIcon(name: string) {
   return <Scissors className={className} aria-hidden="true" />;
 }
 
-// COP formatting
 function formatCOP(price: string) {
   const value = Math.round(parseFloat(price));
   return `$${value.toLocaleString('es-CO')} COP`;
@@ -67,10 +57,19 @@ const CATEGORY_LABELS: Record<Exclude<ServiceCategory, 'combos'>, string> = {
 };
 
 export default function Home() {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookingBarberId, setBookingBarberId] = useState<number | undefined>(undefined);
+  const [bookingServiceId, setBookingServiceId] = useState<number | undefined>(undefined);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState<Exclude<ServiceCategory, 'combos'>>('cortes');
   const revealRef = useRef<HTMLDivElement>(null);
+
+  const openBooking = (serviceId?: number, barberId?: number) => {
+    setBookingServiceId(serviceId);
+    setBookingBarberId(barberId);
+    setIsBookingOpen(true);
+  };
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 60);
@@ -113,12 +112,11 @@ export default function Home() {
     }))
     .filter((group) => group.items.length > 0);
 
-  // FAQ data
   const faqs = [
     {
       id: 1,
       question: '¿Cómo puedo reservar una cita?',
-      answer: 'Es facilísimo. Solo haz clic en cualquiera de nuestros botones de reserva y te conectarás directamente a nuestro WhatsApp oficial para agendar tu cita al instante con tu servicio y barbero de preferencia.'
+      answer: 'Usa nuestro sistema de reservas online: selecciona el servicio, el barbero, la fecha y hora, ingresa tus datos y confirma. Recibirás la confirmación directa en pantalla.'
     },
     {
       id: 2,
@@ -128,7 +126,7 @@ export default function Home() {
     {
       id: 3,
       question: '¿Puedo elegir un barbero específico?',
-      answer: '¡Por supuesto! En Barba Azul contamos con Wilfredo, Jairo, Jesús y Daniel. Al reservar por WhatsApp puedes indicar con cuál de nuestros profesionales deseas atenderte.'
+      answer: '¡Por supuesto! En nuestro sistema de reservas puedes seleccionar al barbero de tu preferencia: Wilfredo, Jairo, Jesús o Daniel, según su disponibilidad.'
     },
     {
       id: 5,
@@ -137,7 +135,6 @@ export default function Home() {
     }
   ];
 
-  // Differentials
   const differentials = [
     {
       icon: ShieldCheck,
@@ -178,30 +175,22 @@ export default function Home() {
             <a href="#barberos" className="hover:text-primary transition-colors duration-200">Barberos</a>
             <a href="#contacto" className="hover:text-primary transition-colors duration-200">Contacto</a>
           </div>
-          <a 
-            href={getWhatsAppLink('Hola Barba Azul, me gustaría reservar una cita en su sede de Barranquilla.')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary text-sm inline-flex items-center"
-          >
+          <button onClick={() => openBooking()} className="btn-primary text-sm">
             Reservar Cita
-          </a>
+          </button>
         </div>
       </nav>
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
-        {/* High-quality background image from local public assets */}
         <div 
           className="absolute inset-0 bg-[url('/images/imagen_hero.png')] bg-cover bg-center bg-no-repeat"
           aria-hidden="true"
         />
-        {/* Left-to-right editorial gradient overlay to guarantee text readability while showcasing the image */}
         <div 
           className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background md:bg-gradient-to-r md:from-background/95 md:via-background/85 md:to-background/20 z-0" 
           aria-hidden="true"
         />
-        {/* Global slight dark overlay for consistent text pop */}
         <div className="absolute inset-0 bg-black/25 z-0" aria-hidden="true" />
         
         <div className="relative z-10 container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -213,14 +202,9 @@ export default function Home() {
               La barbería que define el estándar de excelencia en la Arenosa. Cortes milimétricos, afeitados rituales y atención premium de la mano de verdaderos artistas de la tijera.
             </p>
             <div className="flex flex-wrap gap-4 animate-fade-in-delay">
-              <a 
-                href={getWhatsAppLink('Hola Barba Azul, vengo de su página web y quiero agendar mi cita para hoy.')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary text-lg inline-flex items-center justify-center"
-              >
-                Agendar por WhatsApp
-              </a>
+              <button onClick={() => openBooking()} className="btn-primary text-lg">
+                Agendar mi Cita
+              </button>
               <a href="#servicios" className="btn-secondary text-lg inline-flex items-center justify-center">
                 Ver Carta de Servicios
               </a>
@@ -266,14 +250,9 @@ export default function Home() {
                       <p className="text-muted-foreground text-xs mb-3">{service.durationMinutes} min aprox.</p>
                       <p className="text-muted-foreground text-sm mb-6">{service.description}</p>
                     </div>
-                    <a 
-                      href={getWhatsAppLink(`Hola Barba Azul, quiero agendar el combo: ${service.name}`)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full btn-primary text-center text-sm"
-                    >
+                    <button onClick={() => openBooking(service.id)} className="w-full btn-primary text-center text-sm">
                       Reservar Combo
-                    </a>
+                    </button>
                   </Card>
                 ))}
               </div>
@@ -301,26 +280,24 @@ export default function Home() {
                   .map((group) => (
                     <div key={group.key} className="divide-y divide-border/60">
                       {group.items.map((service) => (
-                        <a
+                        <button
                           key={service.id}
-                          href={getWhatsAppLink(`Hola Barba Azul, me interesa reservar el servicio individual: ${service.name} (${formatCOP(service.price)})`)}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          onClick={() => openBooking(service.id)}
                           className="service-row w-full flex items-center justify-between gap-4 px-6 py-5 text-left transition-all duration-300 hover:pl-8"
-                          aria-label={`Reservar ${service.name} por WhatsApp`}
+                          aria-label={`Reservar ${service.name} - ${formatCOP(service.price)}`}
                         >
                           <span className="flex items-center gap-4 min-w-0">
-                            <span className="shrink-0 p-2 bg-muted/50 rounded-lg group-hover:bg-primary/20">{getServiceIcon(service.name)}</span>
+                            <span className="shrink-0 p-2 bg-muted/50 rounded-lg">{getServiceIcon(service.name)}</span>
                             <span className="min-w-0">
                               <span className="block font-bold text-foreground text-base">{service.name}</span>
-                              <span className="block text-xs text-muted-foreground mt-0.5">{service.durationMinutes} min aprox. • {service.description || "Acabado profesional."}</span>
+                              <span className="block text-xs text-muted-foreground mt-0.5">{service.durationMinutes} min aprox.</span>
                             </span>
                           </span>
                           <span className="flex items-center gap-4 shrink-0">
                             <span className="price-serif text-accent font-semibold text-lg">{formatCOP(service.price)}</span>
                             <ChevronRight className="service-row-arrow w-5 h-5 text-primary" aria-hidden="true" />
                           </span>
-                        </a>
+                        </button>
                       ))}
                     </div>
                   ))}
@@ -382,14 +359,9 @@ export default function Home() {
                   <div className="p-6 pt-4">
                     <h3 className="text-2xl font-bold mb-1">{barber.name}</h3>
                     <p className="text-xs uppercase tracking-wider text-accent font-semibold mb-4">Especialista / Master Barber</p>
-                    <a 
-                      href={getWhatsAppLink(`Hola Barba Azul, me gustaría reservar mi cita específicamente con el barbero ${barber.name}.`)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full btn-primary inline-block text-center text-sm"
-                    >
+                    <button onClick={() => openBooking(undefined, barber.id)} className="w-full btn-primary text-center text-sm">
                       Reservar con {barber.name.split(' ')[0]}
-                    </a>
+                    </button>
                   </div>
                 </Card>
               );
@@ -472,7 +444,7 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-16 reveal">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Contacto & Sede</h2>
-            <p className="text-muted-foreground text-lg">Pásate hoy mismo o agenda tu cita antes de venir</p>
+            <p className="text-muted-foreground text-lg">Pásate hoy mismo o escríbenos para más información</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 reveal-stagger">
@@ -484,12 +456,10 @@ export default function Home() {
             <Card className="card-premium text-center flex flex-col justify-between p-6">
               <div>
                 <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">WhatsApp / Cel</h3>
+                <h3 className="text-xl font-bold mb-2">Teléfono</h3>
               </div>
               <a 
-                href={getWhatsAppLink('Hola Barba Azul, quiero hacerles una consulta.')}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="tel:+573007002929"
                 className="text-primary hover:text-secondary font-semibold text-lg transition-colors duration-200"
               >
                 +57 300 700 2929
@@ -530,6 +500,14 @@ export default function Home() {
           <p>&copy; {new Date().getFullYear()} Barbería Barba Azul. Tradición & Estilo. Barranquilla, Colombia.</p>
         </div>
       </footer>
+
+      {/* Booking Modal — full Supabase flow */}
+      <BookingModal 
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        initialBarberId={bookingBarberId}
+        initialServiceId={bookingServiceId}
+      />
     </div>
   );
 }

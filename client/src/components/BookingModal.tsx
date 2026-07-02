@@ -13,9 +13,11 @@ interface BookingModalProps {
   onClose: () => void;
   /** When set (e.g. opened from a barber's card), pre-selects that barber. */
   initialBarberId?: number;
+  /** When set (e.g. opened from a service card), pre-selects that service. */
+  initialServiceId?: number;
 }
 
-export default function BookingModal({ isOpen, onClose, initialBarberId }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, initialBarberId, initialServiceId }: BookingModalProps) {
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState('');
   const [selectedBarber, setSelectedBarber] = useState('');
@@ -26,10 +28,21 @@ export default function BookingModal({ isOpen, onClose, initialBarberId }: Booki
   const [phone, setPhone] = useState('');
 
   useEffect(() => {
-    if (isOpen && initialBarberId) {
-      setSelectedBarber(String(initialBarberId));
+    if (isOpen) {
+      if (initialServiceId) {
+        setSelectedService(String(initialServiceId));
+        setStep(2);
+      } else {
+        setSelectedService('');
+        setStep(1);
+      }
+      if (initialBarberId) {
+        setSelectedBarber(String(initialBarberId));
+      } else {
+        setSelectedBarber('');
+      }
     }
-  }, [isOpen, initialBarberId]);
+  }, [isOpen, initialBarberId, initialServiceId]);
 
   const servicesQuery = trpc.services.list.useQuery();
   const barbersQuery = trpc.barbers.list.useQuery();

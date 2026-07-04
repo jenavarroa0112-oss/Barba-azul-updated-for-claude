@@ -238,21 +238,29 @@ export default function Home() {
           {!servicesQuery.isLoading && !servicesQuery.isError && combos.length > 0 && (
             <div className="mb-14 reveal-stagger">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {combos.map((service) => (
-                  <Card key={service.id} className="card-premium group relative overflow-hidden flex flex-col justify-between">
-                    <div>
-                      <span className="inline-block text-[11px] uppercase tracking-widest font-semibold text-accent border border-accent/40 rounded-full px-2.5 py-1 mb-4">
+                {combos.map((service, index) => (
+                  <Card key={service.id} className="card-premium group relative overflow-hidden flex flex-col">
+                    <div className="relative h-48 w-full -mx-6 -mt-6 mb-4 overflow-hidden bg-muted">
+                      <img
+                        src={`/images/combo-${(index % 3) + 1}.png`}
+                        alt={service.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <span className="inline-block text-[11px] uppercase tracking-widest font-semibold text-accent border border-accent/40 rounded-full px-2.5 py-1 mb-4 w-fit">
                         Combo Recomendado
                       </span>
                       <div className="mb-3">{getServiceIcon(service.name)}</div>
                       <h3 className="text-lg font-bold mb-1">{service.name}</h3>
                       <p className="price-serif text-accent text-xl font-semibold mb-1">{formatCOP(service.price)}</p>
                       <p className="text-muted-foreground text-xs mb-3">{service.durationMinutes} min aprox.</p>
-                      <p className="text-muted-foreground text-sm mb-6">{service.description}</p>
+                      <p className="text-muted-foreground text-sm mb-6 flex-1">{service.description}</p>
+                      <button onClick={() => openBooking(service.id)} className="w-full btn-primary text-center text-sm">
+                        Reservar Combo
+                      </button>
                     </div>
-                    <button onClick={() => openBooking(service.id)} className="w-full btn-primary text-center text-sm">
-                      Reservar Combo
-                    </button>
                   </Card>
                 ))}
               </div>
